@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>NeoTokyo Maps</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="downloads.css">
+        <script src="downloads.js"></script>
+    </head>
+
+    <body>
+        <form action="/downloads" enctype="multipart/form-data" method="post">
+            <div class="form">
+                <input type="file" class="form-control" name="map" accept=".zip,.rar,.7zip,.tar">
+                <label>
+                    Password
+                    <input type="password" class="form-control" name="password">
+                </label>
+
+                <input type="submit" class="form-control" value="Confirm">
+            </div>
+        </form>
+    </body>
+</html>
+
