@@ -1,7 +1,7 @@
 const {RateLimiterMemory} = require("rate-limiter-flexible");
 
-const maxWrongAttemptsByIPPerDay = 50;
-const maxConsecutiveFailsByIP = 6;
+const maxWrongAttemptsByIPPerDay = 25;
+const maxConsecutiveFailsByIP = 5;
 
 const limiterSlowBrute = new RateLimiterMemory({
     keyPrefix: "auth_fail_ip_per_day",
@@ -35,14 +35,33 @@ async function isWithinLimits(ipAddr) {
 
 async function resetLimitForIP(ipAddr) {
    const resConsecutiveIP = await limiterConsecutiveFails.get(ipAddr);
+   const resSlowIP = await limiterSlowBrute.get(ipAddr);
 
    if (resConsecutiveIP !== null && resConsecutiveIP.consumedPoints > 0) {
        await limiterConsecutiveFails.delete(ipAddr);
    }
+
+    if (resSlowIP !== null && resSlowIP.consumedPoints > 0) {
+        await limiterConsecutiveFails.delete(ipAddr);
+    }
+}
+
+async function incFailedAttempts(ipAddr) {
+    try {
+        const promises = [limiterSlowBrute.consume(ipAddr),
+            limiterConsecutiveFails.consume(ipAddr)];
+
+        await Promise.all(promises);
+    } catch (rlRejected) {
+        if (rlRejected instanceof Error) {
+            throw rlRejected;
+        }
+    }
 }
 
 module.exports = {
     isWithinLimits: isWithinLimits,
-    resetLimitForIP: resetLimitForIP
+    resetLimitForIP: resetLimitForIP,
+    incFailedAttempts: incFailedAttempts
 }
 

@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const multer = require("multer");
 
-const multerConfig = require(path.resolve(__dirname, "multer.config"));
+const multerConfig = require(path.resolve(__dirname, "multer-config"));
 const uploadService = require(path.resolve(__dirname, "upload-service"));
 
 var app = express();

@@ -1,37 +1,55 @@
 const path = require("path");
 const logger = require(path.resolve(__dirname, "logger"));
-const { isWithinLimits, resetLimitForIP } = require(path.resolve(__dirname, "rate-limiter"));
+const fs = require("fs");
+const { isWithinLimits, resetLimitForIP, incFailedAttempts } = require(path.resolve(__dirname, "rate-limiter"));
+
+const passwords = JSON.parse(fs.readFileSync("passwords.json", "utf8"));
 
 async function uploadRoute (req, res) {
-    // logger.log({level: "info",
-    //     message: `Upload attempt: ${req.headers["x-forwarded-for"]} |
-    //      Password: ${req.body.password} |
-    //      File: ${req.file.originalname} |
-    //      Time: ${new Date()}`})
+    const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
-    const ipAddr = req.headers["x-forwarded-for"];
+    const foundPassword = passwords.passwords.find(password => password === req.body.password);
+    if(foundPassword === undefined) {
+        incFailedAttempts(ipAddr);
 
-    const withinLimits = await isWithinLimits(ipAddr)
-    if (!withinLimits) {
-        logger.log({level: "error",
-            message: `Password rate limit exceeded: ${ipAddr} |
-             Password: ${req.body.password} |
-             File: ${req.file.originalname} |
-             Time: ${new Date()}`})
+        const withinLimits = await isWithinLimits(ipAddr)
+        if (!withinLimits) {
+            logger.log({level: "error",
+                message: `Password rate limit exceeded: ${ipAddr} |
+                Password: ${req.body.password} |
+                File: ${req.file.originalname} |
+                Time: ${new Date()}`})
 
-        res.status(429).send("Too Many Requests");
+            res.status(429).send("Too Many Requests");
+            return;
+        }
+
+        res.status(403).send("Incorrect password");
+        return;
     }
 
-    // Reset consumed points on successful upload from IP, otherwise wrong attempts would stack and lead to lockout
+    // Reset consumed points on successful password verification from IP, otherwise wrong attempts would stack and lead to lockout
     await resetLimitForIP(ipAddr)
 
-    logger.log({level: "info",
-        message: `Upload attempt: ${ipAddr} |
-             Password: ${req.body.password} |
-             File: ${req.file.originalname} |
-             Time: ${new Date()}`})
+    fs.writeFile(`${__dirname}/../downloads/${req.file.originalname}`, req.file.buffer, (err) => {
+        if (err) {
+            logger.log({level: "info",
+                 message: `Upload failed: ${ipAddr} |
+                 Password: ${req.body.password} |
+                 File: ${req.file.originalname} |
+                 Time: ${new Date()}`})
 
-    res.end("Uploaded")
+            res.code(500).send("Could not write the file to disk")
+        } else {
+            logger.log({level: "info",
+                 message: `Upload successful: ${ipAddr} |
+                 Password: ${req.body.password} |
+                 File: ${req.file.originalname} |
+                 Time: ${new Date()}`})
+
+            res.send("Uploaded");
+        }
+    });
 }
 
 module.exports = {

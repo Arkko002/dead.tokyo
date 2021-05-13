@@ -7,10 +7,8 @@
     </head>
 
     <body>
-        <form action="/downloads" enctype="multipart/form-data" method="post">
+        <form action="/upload" enctype="multipart/form-data" method="post">
             <div class="form">
-                    <!--Order of input forms changes order of fields in the request
-                    Password needs to be provided before file to ensure it can be checked correctly in multer config-->
                 <label>
                     Password
                     <input type="password" class="form-control" name="password">
