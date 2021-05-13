@@ -23,7 +23,6 @@ module.exports = multerConfig = {
         }
         const foundPassword = passwords.passwords.find(password => password === req.body.password);
         if(foundPassword === undefined) {
-            console.log("asd")
             return cb(new Error("Incorrect password"))
         }
 
@@ -32,7 +31,7 @@ module.exports = multerConfig = {
         if(zipped) {
             cb(null, true);
         } else {
-            return cb();
+            return cb("Provided file was wrong format (must be a compressed archive)");
         }
     }
 }
