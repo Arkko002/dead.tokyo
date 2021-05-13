@@ -1,6 +1,7 @@
 const path = require("path");
 const logger = require(path.resolve(__dirname, "logger"));
 const fs = require("fs");
+const { hashPassword } = require(path.resolve(__dirname), "hasher");
 const { isWithinLimits, resetLimitForIP, incFailedAttempts } = require(path.resolve(__dirname, "rate-limiter"));
 
 const passwords = JSON.parse(fs.readFileSync("passwords.json", "utf8"));
@@ -8,8 +9,14 @@ const passwords = JSON.parse(fs.readFileSync("passwords.json", "utf8"));
 async function uploadRoute (req, res) {
     const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
-    const foundPassword = passwords.passwords.find(password => password === req.body.password);
-    if(foundPassword === undefined) {
+    let foundPassword = false;
+    passwords.passwords.forEach((password) => {
+        if (hashPassword(req.body.password) === password) {
+            foundPassword = true;
+        }
+    });
+
+    if(foundPassword === false) {
         incFailedAttempts(ipAddr);
 
         const withinLimits = await isWithinLimits(ipAddr)
