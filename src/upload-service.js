@@ -4,7 +4,8 @@ const fs = require("fs");
 const { hashPassword } = require("./hasher");
 const { isWithinLimits, resetLimitForIP, incFailedAttempts } = require("./rate-limiter");
 
-const passwords = JSON.parse(fs.readFileSync("passwords.json", "utf8"));
+const passwordPath = path.join(__dirname, "passwords.json")
+const passwords = JSON.parse(fs.readFileSync(passwordPath, "utf8"));
 
 async function uploadRoute (req, res) {
     const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
