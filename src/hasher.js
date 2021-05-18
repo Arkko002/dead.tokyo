@@ -14,7 +14,8 @@ function hashPasswordToFile(password) {
 
     let hashedPassword = hashPassword(password);
 
-    const passwords = JSON.parse(fs.readFileSync("passwords.json", "utf8"));
+    const passwordPath = path.join(__dirname, "/../passwords.json")
+    const passwords = JSON.parse(fs.readFileSync(passwordPath, "utf8"));
     if(passwords.passwords === undefined) {
         throw "Password file is improperly formatted"
     }

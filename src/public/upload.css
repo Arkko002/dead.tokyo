@@ -10,7 +10,6 @@ body {
 	display: grid;
 	grid-template-rows: repeat(1fr, 3);
 
-
 	height: 300px;
 	width: 300px;
 }
