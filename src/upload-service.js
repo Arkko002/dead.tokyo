@@ -1,8 +1,8 @@
 const path = require("path");
 const logger = require(path.resolve(__dirname, "logger"));
 const fs = require("fs");
-const { hashPassword } = require(path.resolve(__dirname), "hasher");
-const { isWithinLimits, resetLimitForIP, incFailedAttempts } = require(path.resolve(__dirname, "rate-limiter"));
+const { hashPassword } = require("./hasher");
+const { isWithinLimits, resetLimitForIP, incFailedAttempts } = require("./rate-limiter");
 
 const passwords = JSON.parse(fs.readFileSync("passwords.json", "utf8"));
 
