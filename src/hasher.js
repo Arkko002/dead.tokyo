@@ -17,7 +17,7 @@ function hashPasswordToFile(password) {
 
     const passwordPath = path.join(__dirname, "/../passwords.json")
     fs.open(passwordPath, "w+", (err, fd) => {
-        if (!err) throw `Error opening password file: ${err}`
+        if (err) throw `Error opening password file: ${err}`
 
 
         const passwords = JSON.parse(fs.readFileSync(fd, "utf8"));
