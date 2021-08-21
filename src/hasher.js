@@ -20,7 +20,17 @@ function hashPasswordToFile(password) {
         if (err) throw `Error opening password file: ${err}`
 
 
-        const passwords = JSON.parse(fs.readFileSync(fd, "utf8"));
+        let passwords;
+        try {
+            passwords = JSON.parse(fs.readFileSync(fd, "utf8"));
+        } catch (err) {
+            if (err instanceof SyntaxError) {
+                passwords = {}
+            } else {
+                throw `Error parsing JSON: ${err}`
+            }
+        }
+
         if(passwords.passwords === undefined) {
             passwords.passwords = []
         }
