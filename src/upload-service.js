@@ -18,7 +18,7 @@ async function uploadRoute (req, res) {
     });
 
     if(foundPassword === false) {
-        incFailedAttempts(ipAddr);
+        await incFailedAttempts(ipAddr);
 
         const withinLimits = await isWithinLimits(ipAddr)
         if (!withinLimits) {
