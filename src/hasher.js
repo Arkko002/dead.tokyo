@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const fs = require("fs");
+const path = require("path");
 
 function hashPassword(password) {
     const shaHash = crypto.createHash("sha256");
@@ -15,18 +16,23 @@ function hashPasswordToFile(password) {
     let hashedPassword = hashPassword(password);
 
     const passwordPath = path.join(__dirname, "/../passwords.json")
-    const passwords = JSON.parse(fs.readFileSync(passwordPath, "utf8"));
-    if(passwords.passwords === undefined) {
-        throw "Password file is improperly formatted"
-    }
+    fs.open(passwordPath, "w+", (err, fd) => {
+        if (!err) throw `Error opening password file: ${err}`
 
-    passwords.passwords.push(hashedPassword);
 
-    fs.writeFile("passwords.json", JSON.stringify(passwords), (err) => {
-        if (err) {
-            throw err;
+        const passwords = JSON.parse(fs.readFileSync(fd, "utf8"));
+        if(passwords.passwords === undefined) {
+            passwords.passwords = []
         }
-    });
+
+        passwords.passwords.push(hashedPassword);
+
+        fs.writeFile(fd, JSON.stringify(passwords), (err) => {
+            if (err) {
+                throw err;
+            }
+        });
+    })
 }
 
 module.exports = {
