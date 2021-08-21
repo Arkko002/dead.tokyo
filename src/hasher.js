@@ -15,8 +15,8 @@ function hashPasswordToFile(password) {
 
     let hashedPassword = hashPassword(password);
 
-    const passwordPath = path.join(__dirname, "/../passwords.json")
-    fs.open(passwordPath, "w+", (err, fd) => {
+    const passwordPath = path.join(__dirname, "../passwords.json")
+    fs.open(passwordPath, "r", (err, fd) => {
         if (err) throw `Error opening password file: ${err}`
 
 
@@ -37,12 +37,13 @@ function hashPasswordToFile(password) {
 
         passwords.passwords.push(hashedPassword);
 
-        fs.writeFile(fd, JSON.stringify(passwords), (err) => {
+        fs.writeFile(passwordPath, JSON.stringify(passwords), (err) => {
             if (err) {
                 throw err;
             }
         });
     })
+
 }
 
 module.exports = {
