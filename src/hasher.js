@@ -8,7 +8,7 @@ function hashPassword(password) {
 	return shaHash.update(password).digest("hex");
 }
 
-function hashPasswordToFile(password) {
+function addHashToFile(password) {
 	if (password === undefined) {
 		password = process.argv[1];
 	}
@@ -16,7 +16,25 @@ function hashPasswordToFile(password) {
 	let hashedPassword = hashPassword(password);
 	let passwords = configLoader.getPasswordObject();
 
-	passwords.passwords.push(hashedPassword);
+	passwords.push(hashedPassword);
+
+	let config = configLoader.getConfig();
+	fs.writeFile(config.passwordPath, JSON.stringify(passwords), (err) => {
+		if (err) {
+			throw err;
+		}
+	});
+}
+
+function removeHashFromFile(password) {
+	if (password === undefined) {
+		password = process.argv[1];
+	}
+
+	let hashedPassword = hashPassword(password);
+	let passwords = configLoader.getPasswordObject();
+
+	passwords = passwords.filter((p) => p !== hashedPassword);
 
 	let config = configLoader.getConfig();
 	fs.writeFile(config.passwordPath, JSON.stringify(passwords), (err) => {
@@ -28,6 +46,7 @@ function hashPasswordToFile(password) {
 
 module.exports = {
 	hashPassword: hashPassword,
-	hashPasswordToFile: hashPasswordToFile
+	addHashToFile: addHashToFile,
+	removeHashFromFile: removeHashFromFile
 }
 

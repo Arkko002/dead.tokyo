@@ -42,14 +42,10 @@ function getPasswordObject() {
 		passwords = JSON.parse(fs.readFileSync(fd, "utf8"));
 	} catch (err) {
 		if (err instanceof SyntaxError) {
-			passwords = {}
+			passwords = []
 		} else {
 			throw `Error parsing JSON: ${err}`
 		}
-	}
-
-	if (passwords.passwords === undefined) {
-		passwords.passwords = []
 	}
 
 	return passwords;
