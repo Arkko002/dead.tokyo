@@ -1,65 +1,77 @@
 const path = require("path");
-const logger = require(path.resolve(__dirname, "logger"));
 const fs = require("fs");
-const { hashPassword } = require("./hasher");
-const { isWithinLimits, resetLimitForIP, incFailedAttempts } = require("./rate-limiter");
+const logger = require(path.resolve(__dirname, "logger"));
+const { hashPassword } = require("./hasher.js");
+const { isWithinLimits, resetLimitForIP, incFailedAttempts } = require("./rate-limiter.js");
+const configLoader = require("./config-loader.js");
 
-const passwordPath = path.join(__dirname, "/../passwords.json")
-const passwords = JSON.parse(fs.readFileSync(passwordPath, "utf8"));
+// TODO Module for fs handling
+async function uploadRoute(req, res) {
+	const config = configLoader.getConfig();
+	const passwords = configLoader.getPasswordObject();
 
-async function uploadRoute (req, res) {
-    const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+	const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
-    let foundPassword = false;
-    passwords.passwords.forEach((password) => {
-        if (hashPassword(req.body.password) === password) {
-            foundPassword = true;
-        }
-    });
+	let foundPassword = false;
 
-    if(foundPassword === false) {
-        await incFailedAttempts(ipAddr);
+	for (const password of passwords.passwords) {
+		if (hashPassword(req.body.password) === password) {
+			foundPassword = true;
+			break;
+		}
+	}
 
-        const withinLimits = await isWithinLimits(ipAddr)
-        if (!withinLimits) {
-            logger.log({level: "error",
-                message: `Password rate limit exceeded: ${ipAddr} |
+	if (!foundPassword) {
+		await incFailedAttempts(ipAddr);
+
+		const withinLimits = await isWithinLimits(ipAddr)
+		if (!withinLimits) {
+			logger.log({
+				level: "error",
+				message: `Password rate limit exceeded: ${ipAddr} |
                 Password: ${req.body.password} |
                 File: ${req.file.originalname} |
-                Time: ${new Date()}`})
+                Time: ${new Date()}`
+			})
 
-            res.status(429).send("Too Many Requests");
-            return;
-        }
+			res.status(429).send("Too Many Requests");
+			return;
+		}
 
-        res.status(403).send("Incorrect password");
-        return;
-    }
+		res.status(403).send("Incorrect password");
+		return;
+	}
 
-    // Reset consumed points on successful password verification from IP, otherwise wrong attempts would stack and lead to lockout
-    await resetLimitForIP(ipAddr)
+	// Reset consumed points on successful password verification from IP, otherwise wrong attempts would stack and lead to lockout
+	await resetLimitForIP(ipAddr);
 
-    fs.writeFile(`${__dirname}/../downloads/${req.file.originalname}`, req.file.buffer, (err) => {
-        if (err) {
-            logger.log({level: "info",
-                 message: `Upload failed: ${ipAddr} |
+	const filePath = path.join(config.fileSavingPath, req.file.originalname);
+
+	fs.writeFile(filePath, req.file.buffer,{flag: "wx"}, (err) => {
+		if (err) {
+			logger.log({
+				level: "error",
+				message: `Upload failed: ${ipAddr} |
                  Password: ${req.body.password} |
                  File: ${req.file.originalname} |
-                 Time: ${new Date()}`})
+                 Time: ${new Date()} | 
+                 Error: ${err}`
+			})
 
-            res.code(500).send("Could not write the file to disk")
-        } else {
-            logger.log({level: "info",
-                 message: `Upload successful: ${ipAddr} |
+			res.status(500).send(`Could not write the file to disk: ${err}`)
+		} else {
+			logger.log({
+				level: "info",
+				message: `Upload successful: ${ipAddr} |
                  Password: ${req.body.password} |
                  File: ${req.file.originalname} |
-                 Time: ${new Date()}`})
+                 Time: ${new Date()}`
+			})
 
-            res.send("Uploaded");
-        }
-    });
+			res.send("Uploaded");
+		}
+	});
 }
-
 module.exports = {
-    uploadRoute: uploadRoute,
+	uploadRoute: uploadRoute,
 }

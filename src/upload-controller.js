@@ -7,7 +7,7 @@ const multerConfig = require("./multer-config");
 const uploadService = require("./upload-service");
 
 const app = express();
-const port = 8080;
+const port = 42069;
 
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -16,13 +16,13 @@ app.use(helmet());
 
 
 app.post("/upload", multer(multerConfig).single("map"), async (req, res) => {
-    try {
-        await uploadService.uploadRoute(req, res);
-    } catch (err) {
-        res.status(500).end()
-    }
+	try {
+		await uploadService.uploadRoute(req, res);
+	} catch (err) {
+		res.status(500).end()
+	}
 });
 
 app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+	console.log(`Server listening on port ${port}`);
 });

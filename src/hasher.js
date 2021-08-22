@@ -1,51 +1,33 @@
 const crypto = require("crypto");
 const fs = require("fs");
-const path = require("path");
+const configLoader = require("./config-loader.js")
 
 function hashPassword(password) {
-    const shaHash = crypto.createHash("sha256");
+	const shaHash = crypto.createHash("sha256");
 
-    return  shaHash.update(password).digest("hex");
+	return shaHash.update(password).digest("hex");
 }
 
 function hashPasswordToFile(password) {
-    if (password === undefined) {
-        password = process.argv[1];
-    }
+	if (password === undefined) {
+		password = process.argv[1];
+	}
 
-    let hashedPassword = hashPassword(password);
+	let hashedPassword = hashPassword(password);
+	let passwords = configLoader.getPasswordObject();
 
-    const passwordPath = path.join(__dirname, "../passwords.json")
-    fs.open(passwordPath, "a+", (err, fd) => {
-        if (err) throw `Problem opening the file: ${err}`
+	passwords.passwords.push(hashedPassword);
 
-        let passwords;
-        try {
-            passwords = JSON.parse(fs.readFileSync(fd, "utf8"));
-        } catch (err) {
-            if (err instanceof SyntaxError) {
-                passwords = {}
-            } else {
-                throw `Error parsing JSON: ${err}`
-            }
-        }
-
-        if(passwords.passwords === undefined) {
-            passwords.passwords = []
-        }
-
-        passwords.passwords.push(hashedPassword);
-
-        fs.writeFile(passwordPath, JSON.stringify(passwords), (err) => {
-            if (err) {
-                throw err;
-            }
-        });
-    })
-
+	let config = configLoader.getConfig();
+	fs.writeFile(config.passwordPath, JSON.stringify(passwords), (err) => {
+		if (err) {
+			throw err;
+		}
+	});
 }
 
 module.exports = {
-    hashPassword: hashPassword,
-    hashPasswordToFile: hashPasswordToFile
+	hashPassword: hashPassword,
+	hashPasswordToFile: hashPasswordToFile
 }
+

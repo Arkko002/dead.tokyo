@@ -1,29 +1,29 @@
 const multer = require("multer");
-const fileType = require("file-type");
+const path = require("path");
+const configLoader = require("./config-loader.js");
 
-module.exports = multerConfig = {
-    storage: multer.memoryStorage(),
 
-    fileFilter: (req, file, cb) => {
-        if(!file) {
-            return cb(new Error("No file was uploaded"));
-        }
+let multerConfig = {
 
-        const zipped = (file) => {
-            let ext = fileType.fromBuffer(file).ext;
+	storage: multer.memoryStorage(),
 
-            // TODO possibly more supported extensions
-            let archiveExts = ["zip", "tar", "rar", "gz", "7z", "bz2"];
+	fileFilter: (req, file, cb) => {
+		if (!file) {
+			return cb(new Error("No file was uploaded"));
+		}
 
-            // indexOf will be -1 if ext is not found in array
-            return archiveExts.indexOf(ext) !== -1;
-        };
+		let ext = path.extname(file.originalname)
+		let archiveExts = configLoader.getConfig().allowedExtensions;
 
-        if(zipped) {
-            cb(null, true);
-        } else {
-            return cb("Provided file was wrong format (must be a compressed archive)");
-        }
-		
-    },
+		// indexOf will be -1 if ext is not found in array
+		const zipped = archiveExts.indexOf(ext) !== -1;
+
+		if (zipped) {
+			cb(null, true);
+		} else {
+			return cb("Provided file was wrong format (must be a compressed archive)");
+		}
+
+	},
 }
+module.exports = multerConfig;
