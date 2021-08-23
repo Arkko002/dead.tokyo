@@ -24,3 +24,10 @@ In case of missing entries default values will be provided. If you mess up your 
 to reset it with default values.
 
 Currently, there is no check for malformed entries.
+
+
+## Logs
+Logs can be found in the ```combined.log``` or ```error.log``` files.
+
+Combined.log contains all the logs produced by the program, including debug info about normal operations.
+Error.log contains only logs produced by erronous operations (File upload failures, password attempts failures, login attempt timeouts etc.)
