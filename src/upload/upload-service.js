@@ -1,5 +1,4 @@
 const path = require('path');
-const fs = require('fs');
 const logger = require(path.resolve(__dirname, 'logger'));
 const { hashPassword } = require('./hasher.js');
 const {
@@ -7,7 +6,8 @@ const {
   resetLimitForIP,
   incFailedAttempts,
 } = require('./rate-limiter.js');
-const configLoader = require('./config-loader.js');
+const configLoader = require('../util/config-loader.js');
+const config = require('../config.js');
 const { uploadError } = require('./upload-error.js');
 const { writeFile } = require('./file-writer.js');
 

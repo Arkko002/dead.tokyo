@@ -1,12 +1,12 @@
 const fs = require('fs');
 const logger = require(path.resolve(__dirname, 'logger'));
-const configLoader = require('./config-loader.js');
+const config = require('../config.js');
 
 // TODO Better error handling for file writing, recoverable errors
 async function writeFile(file) {
   // TODO add number at end of file if already exists
-  const config = configLoader.getConfig();
-  const filePath = path.join(config.fileSavingPath, file.originalname);
+  const savePath = config.get('path.fileSavingPath');
+  const filePath = path.join(savePath, file.originalname);
 
   fs.writeFile(file, filePath, { flag: 'wx' }, (err) => {
     if (err) {

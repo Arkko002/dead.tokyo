@@ -32,6 +32,7 @@ function removeHashFromFile(password) {
   }
 
   let hashedPassword = hashPassword(password);
+  // TODO Better password reading from file
   let passwords = configLoader.getPasswordObject();
 
   passwords = passwords.filter((p) => p !== hashedPassword);
