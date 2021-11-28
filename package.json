@@ -6,8 +6,6 @@
   "main": "src/upload-controller.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "addPassword": "node -e 'require(\"./src/util/hasher.js\").addHashToFile()'",
-    "removePassword": "node -e 'require(\"./src/util/hasher.js\").removeHashFromFile()'"
   },
   "keywords": [],
   "author": "Arkko",

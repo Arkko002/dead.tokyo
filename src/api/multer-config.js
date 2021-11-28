@@ -1,6 +1,6 @@
 const multer = require("multer");
 const path = require("path");
-const configLoader = require("./util/config-loader.js");
+const config = require("../config/config");
 
 let multerConfig = {
   storage: multer.memoryStorage(),
@@ -11,7 +11,7 @@ let multerConfig = {
     }
 
     let ext = path.extname(file.originalname);
-    let archiveExts = configLoader.getConfig().allowedExtensions;
+    let archiveExts = config.get("allowedExtensions");
 
     // indexOf will be -1 if ext is not found in array
     const zipped = archiveExts.indexOf(ext) !== -1;

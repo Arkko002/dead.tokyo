@@ -1,7 +1,9 @@
-const fs = require("fs").promises;
+const fs = require("fs");
+const promisify = require("util").promisify;
 const path = require("path");
-const logger = require("../logger.js");
-const config = require("../config.js");
+const config = require("../config/config.js");
+
+const writeFilePromise = promisify(fs.writeFile);
 
 // TODO Better error handling for file writing, recoverable errors
 async function writeFile(file) {
@@ -10,27 +12,7 @@ async function writeFile(file) {
   const filePath = path.join(savePath, file.originalname);
 
   // TODO Possible path traversal attack here
-  // TODO Move logging up, dont pass net info into file writer
-  fs.writeFile(filePath, file, { flag: "wx" })
-    .then(() => {
-      logger.log({
-        level: "info",
-        message: `Upload successful: ${ipAddr} |
-                 Password: ${ctx.password} |
-                 File: ${ctx.file.originalname} |
-                 Time: ${new Date()}`,
-      });
-    })
-    .catch((err) => {
-      logger.log({
-        level: "error",
-        message: `Upload failed: ${ipAddr} |
-                 Password: ${ctx.password} |
-                 File: ${ctx.file.originalname} |
-                 Time: ${new Date()} | 
-                 Error: ${err}`,
-      });
-    });
+  await writeFilePromise(filePath, file, { flag: "wx" });
 }
 
 module.exports = {

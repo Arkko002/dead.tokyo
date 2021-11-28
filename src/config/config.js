@@ -1,4 +1,6 @@
 const convict = require("convict");
+const fs = require("fs");
+const promisify = require("util").promisify;
 
 let config = convict({
   allowedExtensions: {
@@ -20,7 +22,10 @@ let config = convict({
   },
 });
 
-config.loadFile("../config.json");
+if (fs.existsSync("../../config.json")) {
+  config.loadFile("../config.json");
+}
+
 config.validate({ allowed: "strict" });
 
 module.exports = config;

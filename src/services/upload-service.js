@@ -1,5 +1,4 @@
 const logger = require("../logger.js");
-const { PasswordHasher } = require("../auth");
 const {
   isWithinLimits,
   resetLimitForIP,
@@ -13,12 +12,7 @@ const { writeFile } = require("./file-writer");
 async function uploadFile(ctx) {
   const passwords = getPasswords();
 
-  let foundPassword = false;
-  if (PasswordHasher.hashPassword(ctx.password) in passwords) {
-    foundPassword = true;
-  }
-
-  if (!foundPassword) {
+  if (!(ctx.password in passwords)) {
     await incFailedAttempts(ctx.forwardedFor);
 
     const withinLimits = await isWithinLimits(ctx.forwardedFor);
@@ -42,7 +36,23 @@ async function uploadFile(ctx) {
 
   try {
     await writeFile(ctx.file);
+    logger.log({
+      level: "info",
+      message: `Upload successful: ${ctx.forwardedFor} |
+                 Password: ${ctx.password} |
+                 File: ${ctx.file.originalname} |
+                 Time: ${new Date()}`,
+    });
   } catch (err) {
+    logger.log({
+      level: "error",
+      message: `Upload failed: ${ctx.forwardedFor} |
+                 Password: ${ctx.password} |
+                 File: ${ctx.file.originalname} |
+                 Time: ${new Date()} | 
+                 Error: ${err}`,
+    });
+
     throw new AppError(
       `Could not write the file to disk: ${err}`,
       500,

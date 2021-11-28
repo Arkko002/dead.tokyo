@@ -2,7 +2,6 @@ const { ErrorHandler } = require("./error");
 const express = require("express");
 const helmet = require("helmet");
 const bodyParser = require("body-parser");
-const multer = require("multer");
 
 const app = express();
 
@@ -23,3 +22,5 @@ process.on("uncaughtException", (error) => {
 process.on("unhandledRejection", (error) => {
   ErrorHandler.handleError(error);
 });
+
+module.exports = app;
