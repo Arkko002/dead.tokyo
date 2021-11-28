@@ -23,7 +23,7 @@ let config = convict({
 });
 
 if (fs.existsSync("../../config.json")) {
-  config.loadFile("../config.json");
+  config.loadFile("../../config.json");
 }
 
 config.validate({ allowed: "strict" });
