@@ -12,7 +12,7 @@ const { writeFile } = require("./file-writer");
 async function uploadFile(ctx) {
   const passwords = getPasswords();
 
-  if (!(ctx.password in passwords)) {
+  if (!passwords.passwords.includes(ctx.password)) {
     await incFailedAttempts(ctx.forwardedFor);
 
     const withinLimits = await isWithinLimits(ctx.forwardedFor);

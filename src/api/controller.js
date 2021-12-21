@@ -12,7 +12,7 @@ app.post("/upload", multer(multerConfig).single("map"), async (req, res) => {
   let contextObj = {
     forwardedFor: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
     password: req.body.password,
-    file: req.body.file,
+    file: req.file,
   };
 
   try {
@@ -24,6 +24,7 @@ app.post("/upload", multer(multerConfig).single("map"), async (req, res) => {
     if (err instanceof AppError) {
       res.status(err.code).send(err.message);
     } else {
+      console.error(err);
       res.status(500).end();
     }
   }
