@@ -22,9 +22,7 @@ let config = convict({
   },
 });
 
-if (fs.existsSync("/home/arkko/.config/uploader/config.json")) {
-  config.loadFile("/home/arkko/.config/uploader/config.json");
-}
+config.loadFile("./config.json");
 
 config.validate({ allowed: "strict" });
 
